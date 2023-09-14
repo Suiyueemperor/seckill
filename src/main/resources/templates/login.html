@@ -90,9 +90,9 @@
                 layer.closeAll();//弹框关闭
                 if (data.code == 200) {
                     layer.msg("成功");
+                    window.location.href = "/goods/toList";
                 } else {
                     layer.msg(data.message);
-                    window.location.href = "/goods/toList";
                 }
             },
             error: function () {
