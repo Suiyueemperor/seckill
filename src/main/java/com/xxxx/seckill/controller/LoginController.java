@@ -1,8 +1,13 @@
 package com.xxxx.seckill.controller;
 
+import com.xxxx.seckill.service.IUserService;
+import com.xxxx.seckill.vo.LoginVo;
+import com.xxxx.seckill.vo.RespBean;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
  * <p>
@@ -17,8 +22,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @Slf4j //lombok annotation //输出日志,不用自己定义log类来打印日志 log.inform;log.warring;log.error
 public class LoginController {
 
+    @Autowired
+    private IUserService userService;
+
     @RequestMapping("/toLogin")
     public String toLogin(){
         return "login";
+    }
+
+    @RequestMapping("doLogin")
+    @ResponseBody
+    public RespBean doLogin(LoginVo loginVo){
+        log.info("{}",loginVo.toString());
+        return userService.doLogin(loginVo);
     }
 }
