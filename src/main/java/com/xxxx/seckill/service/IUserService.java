@@ -20,9 +20,12 @@ public interface IUserService extends IService<User> {//业务逻辑都写在ser
 
     /**
      * 登陆
+     *
      * @param loginVo
+     * @param request
+     * @param response
      * @return
      */
-    RespBean doLogin(LoginVo loginVo);//接口 再找实现类
+    RespBean doLogin(LoginVo loginVo, HttpServletRequest request, HttpServletResponse response);//接口 再找实现类
 
 }
