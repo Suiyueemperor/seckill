@@ -1,7 +1,7 @@
 package com.xxxx.seckill.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.xxxx.seckill.entity.SeckillOrder;
+import com.xxxx.seckill.pojo.SeckillOrder;
 
 /**
  * <p>
