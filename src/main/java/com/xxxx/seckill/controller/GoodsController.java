@@ -34,9 +34,10 @@ public class GoodsController {
      * @return
      */
     @RequestMapping("/toList")
-    public String toList(HttpServletRequest request, HttpServletResponse response, Model model, @CookieValue("userTicket") String ticket){//从Cookie中获取参数
+    public String toList(Model model, User user){//从Cookie中获取参数
+        //原参数列表(HttpServletRequest request, HttpServletResponse response, Model model, @CookieValue("userTicket") String ticket)
         //去掉了参数session
-        if (StringUtils.isEmpty(ticket)){
+        /*if (StringUtils.isEmpty(ticket)){
             return "login";
         }
 //        User user = (User) session.getAttribute(ticket);
@@ -44,7 +45,7 @@ public class GoodsController {
         User user = userService.getUserByCookie(ticket,request,response);
         if (user == null) {
             return "login";
-        }
+        }*/
         model.addAttribute("user", user);
         return "goodsList";
     }
