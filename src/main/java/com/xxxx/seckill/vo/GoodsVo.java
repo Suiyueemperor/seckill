@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
 /**
  * <p>
@@ -25,6 +26,6 @@ public class GoodsVo extends Goods {
 
     private BigDecimal seckillPrice;
     private Integer stockCount;//用包装类
-    private Data startDate;
-    private Data endDate;
+    private Date startDate;
+    private Date endDate;
 }
