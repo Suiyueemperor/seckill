@@ -12,7 +12,9 @@ import com.xxxx.seckill.vo.LoginVo;
 import com.xxxx.seckill.vo.RespBean;
 import com.xxxx.seckill.vo.RespBeanEnum;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -30,9 +32,9 @@ import javax.servlet.http.HttpServletResponse;
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IUserService {
 
     @Autowired
-    private UserMapper userMapper;
-//    @Autowired
-//    private RedisTemplate redisTemplate;
+    private UserMapper userMapper;//注入操作操作user的数据库映射
+    @Autowired
+    private RedisTemplate redisTemplate;//注入操作redis的对象
     /**
      * 登录
      *
@@ -63,10 +65,23 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         }
         //生成cookie
         String ticket = UUIDUtil.uuid();//生成UID
-        request.getSession().setAttribute(ticket, user);//将其放入session中
+        redisTemplate.opsForValue().set("user:"+ticket,user);//user:ticket, user;
+//        request.getSession().setAttribute(ticket, user);//将其放入session中
         CookieUtil.setCookie(request,response,"userTicket",ticket);//设置cookie
 
         return RespBean.success(RespBeanEnum.SUCCESS);
+    }
+
+    @Override
+    public User getUserByCookie(String userTicket, HttpServletRequest request, HttpServletResponse response) {
+        if (StringUtils.isEmpty(userTicket)) {
+            return null;
+        }
+        User user = (User) redisTemplate.opsForValue().get("user:" + userTicket);
+        if (user != null) {
+            CookieUtil.setCookie(request,response,"userTicket",userTicket);//重置Cookie, 以防万一的操作
+        }
+        return user;
     }
 
 }

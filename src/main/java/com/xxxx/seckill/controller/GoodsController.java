@@ -9,6 +9,8 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 /**
@@ -23,6 +25,8 @@ import javax.servlet.http.HttpSession;
 @RequestMapping("/goods")
 public class GoodsController {
 
+    @Autowired
+    private IUserService userService;//注入user的服务类
     /**
      * 跳转商品列表页
      * @param model
@@ -30,12 +34,14 @@ public class GoodsController {
      * @return
      */
     @RequestMapping("/toList")
-    public String toList(Model model, HttpSession session, @CookieValue("userTicket") String ticket){//从Cookie中获取参数
-
+    public String toList(HttpServletRequest request, HttpServletResponse response, Model model, @CookieValue("userTicket") String ticket){//从Cookie中获取参数
+        //去掉了参数session
         if (StringUtils.isEmpty(ticket)){
             return "login";
         }
-        User user = (User) session.getAttribute(ticket);
+//        User user = (User) session.getAttribute(ticket);
+        //通过user获取cookie
+        User user = userService.getUserByCookie(ticket,request,response);
         if (user == null) {
             return "login";
         }

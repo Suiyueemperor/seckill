@@ -28,4 +28,10 @@ public interface IUserService extends IService<User> {//业务逻辑都写在ser
      */
     RespBean doLogin(LoginVo loginVo, HttpServletRequest request, HttpServletResponse response);//接口 再找实现类
 
+    /**
+     * 在redis中根据["user:"+ticket]获取user
+     * @param userTicket
+     * @return
+     */
+    User getUserByCookie(String userTicket, HttpServletRequest request, HttpServletResponse response);
 }
