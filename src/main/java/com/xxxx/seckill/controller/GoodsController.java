@@ -1,17 +1,12 @@
 package com.xxxx.seckill.controller;
 
 import com.xxxx.seckill.pojo.User;
+import com.xxxx.seckill.service.IGoodsService;
 import com.xxxx.seckill.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.RequestMapping;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 /**
  * <p>
@@ -25,8 +20,11 @@ import javax.servlet.http.HttpSession;
 @RequestMapping("/goods")
 public class GoodsController {
 
+//    @Autowired
+//    private IUserService userService;//注入user的服务类
+
     @Autowired
-    private IUserService userService;//注入user的服务类
+    private IGoodsService goodsService;//注入goods的服务类
     /**
      * 跳转商品列表页
      * @param model
@@ -47,6 +45,7 @@ public class GoodsController {
             return "login";
         }*/
         model.addAttribute("user", user);
+        model.addAttribute("goodsList",goodsService.findGoodsVo());
         return "goodsList";
     }
 }
