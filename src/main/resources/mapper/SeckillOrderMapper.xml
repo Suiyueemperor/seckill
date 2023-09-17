@@ -3,7 +3,7 @@
 <mapper namespace="com.xxxx.seckill.mapper.SeckillOrderMapper">
 
     <!-- 通用查询映射结果 -->
-    <resultMap id="BaseResultMap" type="com.xxxx.seckill.entity.SeckillOrder">
+    <resultMap id="BaseResultMap" type="com.xxxx.seckill.pojo.SeckillOrder">
         <id column="id" property="id" />
         <result column="user_id" property="userId" />
         <result column="order_id" property="orderId" />
