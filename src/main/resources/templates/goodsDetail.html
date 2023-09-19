@@ -34,7 +34,7 @@
             <td>秒杀开始时间</td>
             <td th:text="${#dates.format(goods.startDate,'yyyy-MM-dd HH:mm:ss')}"></td><!--格式化商品开始时间-->
             <td id="seckillTip">
-                <input type="hidden" id="remainSeconds" th:value="${remainSeconds}">
+                <input type="hidden" id="remainSeconds" th:value="${remainSeconds}"><!--隐藏的输入-->
                 <span th:if="${secKillStatus eq 0}">秒杀倒计时: <span id="countDown" th:text="${remainSeconds}"></span>秒
                 </span>
                 <span th:if="${secKillStatus eq 1}">秒杀进行中</span>
@@ -76,7 +76,7 @@ function countDown(){
             $("#countDown").text(remainSeconds - 1);//倒计时文本-1
             $("#remainSeconds").val(remainSeconds - 1);//真实值-1
             countDown();
-        }, 1000);
+        }, 1000);//setTimeout延时执行1s
         // 秒杀进行中
     } else if (remainSeconds == 0) {
         $("#buyButton").attr("disabled", false);
