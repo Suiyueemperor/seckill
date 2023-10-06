@@ -69,7 +69,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 //        request.getSession().setAttribute(ticket, user);//将其放入session中
         CookieUtil.setCookie(request,response,"userTicket",ticket);//设置cookie
 
-        return RespBean.success(RespBeanEnum.SUCCESS);
+        return RespBean.success(ticket);
     }
 
     @Override
