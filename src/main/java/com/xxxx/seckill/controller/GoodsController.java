@@ -3,7 +3,9 @@ package com.xxxx.seckill.controller;
 import com.xxxx.seckill.pojo.User;
 import com.xxxx.seckill.service.IGoodsService;
 import com.xxxx.seckill.service.IUserService;
+import com.xxxx.seckill.vo.DetailVo;
 import com.xxxx.seckill.vo.GoodsVo;
+import com.xxxx.seckill.vo.RespBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
@@ -44,6 +46,7 @@ public class GoodsController {
 
     @Autowired
     private ThymeleafViewResolver thymeleafViewResolver;//注入Thymeleaf
+
     /**
      * 跳转商品列表页
      * @param model
@@ -84,14 +87,15 @@ public class GoodsController {
     }
 
     /**
-     * 跳转商品详情页,goodsId为索引
+     * 跳转商品详情页,goodsId为索引 原将整个放入redis中缓存
      * @param model
      * @param user
      * @return
      */
+    /*
     @RequestMapping(value = "/toDetail/{goodsId}",produces = "text/html;charset=utf-8")
     @ResponseBody
-    public String toDetail(Model model, User user, @PathVariable Long goodsId, HttpServletRequest request, HttpServletResponse response){
+    public String toDetail2(Model model, User user, @PathVariable Long goodsId, HttpServletRequest request, HttpServletResponse response){
         // 直接返回html
         ValueOperations valueOperations = redisTemplate.opsForValue();
         String html = (String) valueOperations.get("goodsDetail:" + goodsId);
@@ -129,5 +133,39 @@ public class GoodsController {
             valueOperations.set("goodsDetail:"+goodsId,html,60, TimeUnit.SECONDS);//60s过期
         }
         return html;
+    }
+*/
+    /**
+     * &跳转商品详情页,只返回有改变的detailVo
+     * @param model
+     * @param user
+     * @return
+     */
+    @RequestMapping("/toDetail/{goodsId}")
+    @ResponseBody
+    public RespBean toDetail(Model model, User user, @PathVariable Long goodsId){
+        GoodsVo goodsVo = goodsService.findGoodsVoByGoodsId(goodsId);
+        Date startDate = goodsVo.getStartDate();
+        Date endDate = goodsVo.getEndDate();
+        Date nowDate = new Date();
+        //秒杀状态
+        int secKillStatus = 0;
+        //秒杀倒计时
+        int remainSeconds = 0;
+        if (nowDate.before(startDate)) {
+            remainSeconds = (int) ((startDate.getTime() - nowDate.getTime()) / 1000);//转成seconds
+        } else if (nowDate.after(endDate)) {
+            secKillStatus = 2;//秒杀已结束
+            remainSeconds = -1;
+        }else {
+            secKillStatus = 1;//秒杀进行中
+            remainSeconds = 0;
+        }
+        DetailVo detailVo = new DetailVo();
+        detailVo.setUser(user);
+        detailVo.setGoodsVo(goodsVo);
+        detailVo.setSecKillStatus(secKillStatus);
+        detailVo.setRemainSeconds(remainSeconds);
+        return RespBean.success(detailVo);
     }
 }
