@@ -8,11 +8,14 @@ import com.xxxx.seckill.service.IGoodsService;
 import com.xxxx.seckill.service.IOrderService;
 import com.xxxx.seckill.service.ISeckillOrderService;
 import com.xxxx.seckill.vo.GoodsVo;
+import com.xxxx.seckill.vo.RespBean;
 import com.xxxx.seckill.vo.RespBeanEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
  * <p>
@@ -32,9 +35,8 @@ public class SeckillController {
     private ISeckillOrderService seckillOrderService;//注入获取秒杀商品订单信息 秒杀订单有了 需要正式下订单
     @Autowired
     private IOrderService orderService;
-
-    @RequestMapping("/doSeckill")
-    public String doSeckill(Model model, User user, Long goodsId){
+    @RequestMapping("/doSeckill2")
+    public String doSeckill2(Model model, User user, Long goodsId){
         if (user == null) {
             return "login";
         }
@@ -55,6 +57,32 @@ public class SeckillController {
         Order order = orderService.seckill(user, goodsVo);//进行秒杀,返回订单
         model.addAttribute("order", order);//放入订单
         model.addAttribute("goods", goodsVo);//放入商品
-        return "orderDetail";
+        return "orderDetail.htm";
+    }
+    @RequestMapping(value = "/doSeckill",method = RequestMethod.POST)
+    @ResponseBody
+    public RespBean doSeckill(Model model, User user, Long goodsId){
+        if (user == null) {
+            return RespBean.error(RespBeanEnum.SEESION_ERROR);
+        }
+        model.addAttribute("user",user);
+        //判断库存
+        GoodsVo goodsVo = goodsService.findGoodsVoByGoodsId(goodsId);
+        if (goodsVo.getStockCount() < 1) {//库存不足
+            model.addAttribute("errmsg", RespBeanEnum.EMPTY_STOCK.getMessage());
+            return RespBean.error(RespBeanEnum.EMPTY_STOCK);
+        }
+        //判断是否重复抢购(mybatisPlus写法) 前半部eq是获取该用户的订单信息,后eq判断当前goods是否已购买
+        SeckillOrder seckillOrder = seckillOrderService.getOne(new QueryWrapper<SeckillOrder>()
+                .eq("user_id", user.getId()).eq("goods_id", goodsId));
+        if (seckillOrder != null) {
+            model.addAttribute("errmsg",RespBeanEnum.REPEAT_ERROR.getMessage());
+            return RespBean.error(RespBeanEnum.REPEAT_ERROR);
+        }
+        Order order = orderService.seckill(user, goodsVo);//进行秒杀,返回订单
+//        model.addAttribute("order", order);//放入订单
+//        model.addAttribute("goods", goodsVo);//放入商品
+
+        return RespBean.success(order);
     }
 }
