@@ -32,7 +32,7 @@
             <td th:text="${goods.goodsPrice}"></td>
             <td th:text="${goods.seckillPrice}"></td>
             <td th:text="${goods.stockCount}"></td>
-            <td><a th:href="'/goods/toDetail/'+${goods.id}">详情</a></td><!--改为了正常目录形式-->
+            <td><a th:href="'/goodsDetail.html?goodsId='+${goods.id}">详情</a></td><!--改为了正常目录形式-->
         </tr>
     </table>
 </div>
