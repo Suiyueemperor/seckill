@@ -24,4 +24,15 @@ public class MQSender {
 //        rabbitTemplate.convertAndSend("queue",msg);//使用的默认直连
         rabbitTemplate.convertAndSend("fanoutExchange","",msg);//fanout
     }
+
+    public void send01(Object msg){
+        log.info("发送red消息: "+msg);
+        rabbitTemplate.convertAndSend("directExchange","queue.red",msg);
+    }
+    public void send02(Object msg){
+        log.info("发送green消息: "+msg);
+        rabbitTemplate.convertAndSend("directExchange","queue.green",msg);
+    }
+
+
 }

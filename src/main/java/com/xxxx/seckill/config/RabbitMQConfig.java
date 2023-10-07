@@ -16,9 +16,12 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RabbitMQConfig {
 
-    private static final String QUEUE01 = "queue_fanout01";
-    private static final String QUEUE02 = "queue_fanout02";
-    private static final String EXCHANGE = "fanoutExchange";
+    //direct
+    private static final String QUEUE01 = "queue_direct01";
+    private static final String QUEUE02 = "queue_direct02";
+    private static final String EXCHANGE = "directExchange";
+    private static final String ROUTINGKEY01 = "queue.red";
+    private static final String ROUTINGKEY02 = "queue.green";
 
     @Bean
     public Queue queue(){
@@ -37,19 +40,19 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public FanoutExchange fanoutExchange(){
-        return new FanoutExchange(EXCHANGE);//交换机
+    public DirectExchange directExchange(){
+        return new DirectExchange(EXCHANGE);//交换机
     }
 
     @Bean
     public Binding binding01(){
         //队列2绑定交换机
-        return BindingBuilder.bind(queue01()).to(fanoutExchange());
+        return BindingBuilder.bind(queue01()).to(directExchange()).with(ROUTINGKEY01);
     }
 
     @Bean
     public Binding binding02(){
         //队列1绑定交换机
-        return BindingBuilder.bind(queue02()).to(fanoutExchange());
+        return BindingBuilder.bind(queue02()).to(directExchange()).with(ROUTINGKEY02);
     }
 }

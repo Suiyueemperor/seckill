@@ -42,4 +42,15 @@ public class UserController {
     public void mq(){
         mqSender.send("hello");
     }
+    @RequestMapping("/mq/direct01")
+    @ResponseBody
+    public void mq01(){
+        mqSender.send01("hello,red");
+    }
+    @RequestMapping("/mq/direct02")
+    @ResponseBody
+    public void mq02(){
+        mqSender.send02("hello,green");
+    }
+
 }
