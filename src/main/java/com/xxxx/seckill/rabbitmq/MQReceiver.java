@@ -44,7 +44,7 @@ public class MQReceiver {
     }
     @RabbitListener(queues = "queue_topic02")
     public void receive04(Object msg) {
-        log.info("QUEUE01,QUEUE02接受消息：" + msg);
+        log.info("QUEUE02接受消息：" + msg);
     }
 
 
