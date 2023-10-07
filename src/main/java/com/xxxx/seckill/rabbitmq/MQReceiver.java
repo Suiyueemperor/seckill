@@ -20,4 +20,23 @@ public class MQReceiver {
     public void receive(Object msg){
         log.info("接受消息: "+msg);
     }
+
+    /**
+     * 监听队列1
+     * @param msg
+     */
+    @RabbitListener(queues = "queue_fanout01")
+    public void receive01(Object msg) {
+        log.info("QUEUE01接受消息：" + msg);
+    }
+
+    /**
+     * 监听队列2
+     * @param msg
+     */
+    @RabbitListener(queues = "queue_fanout02")
+    public void receive02(Object msg) {
+        log.info("QUEUE02接受消息：" + msg);
+    }
+
 }
