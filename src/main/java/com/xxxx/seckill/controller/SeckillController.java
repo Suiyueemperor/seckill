@@ -11,6 +11,7 @@ import com.xxxx.seckill.vo.GoodsVo;
 import com.xxxx.seckill.vo.RespBean;
 import com.xxxx.seckill.vo.RespBeanEnum;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -35,6 +36,8 @@ public class SeckillController {
     private ISeckillOrderService seckillOrderService;//注入获取秒杀商品订单信息 秒杀订单有了 需要正式下订单
     @Autowired
     private IOrderService orderService;
+    @Autowired
+    private RedisTemplate redisTemplate;
     @RequestMapping("/doSeckill2")
     public String doSeckill2(Model model, User user, Long goodsId){
         if (user == null) {
@@ -73,8 +76,12 @@ public class SeckillController {
             return RespBean.error(RespBeanEnum.EMPTY_STOCK);
         }
         //判断是否重复抢购(mybatisPlus写法) 前半部eq是获取该用户的订单信息,后eq判断当前goods是否已购买
-        SeckillOrder seckillOrder = seckillOrderService.getOne(new QueryWrapper<SeckillOrder>()
-                .eq("user_id", user.getId()).eq("goods_id", goodsId));
+//        SeckillOrder seckillOrder = seckillOrderService.getOne(new QueryWrapper<SeckillOrder>()
+//                .eq("user_id", user.getId()).eq("goods_id", goodsId));
+
+        //使用redis中的索引判断
+        SeckillOrder seckillOrder = (SeckillOrder) redisTemplate.opsForValue().get("user:" + user.getId() + ":" + goodsVo.getId());
+
         if (seckillOrder != null) {
             model.addAttribute("errmsg",RespBeanEnum.REPEAT_ERROR.getMessage());
             return RespBean.error(RespBeanEnum.REPEAT_ERROR);

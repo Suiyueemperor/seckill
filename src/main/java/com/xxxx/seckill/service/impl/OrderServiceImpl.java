@@ -1,6 +1,7 @@
 package com.xxxx.seckill.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xxxx.seckill.exception.GlobalException;
 import com.xxxx.seckill.mapper.SeckillOrderMapper;
@@ -17,9 +18,12 @@ import com.xxxx.seckill.vo.GoodsVo;
 import com.xxxx.seckill.vo.OrderDetailVo;
 import com.xxxx.seckill.vo.RespBeanEnum;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 /**
  * <p>
@@ -40,6 +44,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     private ISeckillOrderService seckillOrderService;
     @Autowired
     private IGoodsService goodsService;
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     /**
      * 进行秒杀,返回订单
@@ -47,14 +53,27 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
      * @param goodsVo
      * @return
      */
+    @Transactional//变成事务
     @Override
     public Order seckill(User user, GoodsVo goodsVo) {
+        /*
         //减秒杀商品的库存 通过商品的goodsId获取该商品的秒杀信息seckillGoods
         SeckillGoods seckillGoods = seckillGoodsService.getOne(new QueryWrapper<SeckillGoods>().eq("goods_id", goodsVo.getId()));
         Integer stockCount = seckillGoods.getStockCount();//获取库存
         seckillGoods.setStockCount(stockCount - 1);//减库存
         seckillGoodsService.updateById(seckillGoods);//更新秒杀库存信息
         //goodsVo.setGoodsStock(goodsVo.getGoodsStock()-1);//原仓库中的也要减,本实验没有考虑
+         */
+        //秒杀商品 减库存
+        SeckillGoods seckillGoods = seckillGoodsService.getOne(new QueryWrapper<SeckillGoods>().eq("goods_id", goodsVo.getId()));
+        seckillGoods.setStockCount(seckillGoods.getStockCount()-1);//减库存
+        //更新秒杀库存信息 sql判断
+        boolean result = seckillGoodsService.update(new UpdateWrapper<SeckillGoods>().setSql("stock_count = stock_count - 1")
+                .eq("goods_id", goodsVo.getId()).gt("stock_count", 0));
+        if (!result) {
+            return null;//不创建订单
+        }
+
         //生成订单信息
         Order order = new Order();//订单ID不设置 //订单ID默认自动生成
         order.setUserId(user.getId());
@@ -73,6 +92,9 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         seckillOrder.setOrderId(order.getId());//用订单id即可
         seckillOrder.setGoodsId(goodsVo.getId());
         seckillOrderService.save(seckillOrder);//秒杀订单与订单关联 只需要将订单写入数据库
+
+        //将用户id+商品id，和对应的订单存入redis, 一天失效实际不是.
+        redisTemplate.opsForValue().set("user:"+user.getId()+":"+goodsVo.getId(),seckillOrder,1, TimeUnit.DAYS);
         return order;
     }
 
