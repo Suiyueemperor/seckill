@@ -33,6 +33,14 @@ public class MQSender {
         log.info("发送green消息: "+msg);
         rabbitTemplate.convertAndSend("directExchange","queue.green",msg);
     }
+    public void send03(Object msg){
+        log.info("发送(QUEUE01)消息: "+msg);
+        rabbitTemplate.convertAndSend("topicExchange","queue.red.message",msg);//满足路由1
+    }
+    public void send04(Object msg){
+        log.info("发送(QUEUE01,QUEUE02)消息: "+msg);
+        rabbitTemplate.convertAndSend("topicExchange","msg.queue.green",msg);//满足两个路由
+    }
 
 
 }
