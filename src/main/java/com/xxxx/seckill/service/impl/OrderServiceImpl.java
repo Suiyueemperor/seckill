@@ -14,11 +14,13 @@ import com.xxxx.seckill.service.IGoodsService;
 import com.xxxx.seckill.service.IOrderService;
 import com.xxxx.seckill.service.ISeckillGoodsService;
 import com.xxxx.seckill.service.ISeckillOrderService;
+import com.xxxx.seckill.utils.JsonUtil;
 import com.xxxx.seckill.vo.GoodsVo;
 import com.xxxx.seckill.vo.OrderDetailVo;
 import com.xxxx.seckill.vo.RespBeanEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -64,13 +66,16 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         seckillGoodsService.updateById(seckillGoods);//更新秒杀库存信息
         //goodsVo.setGoodsStock(goodsVo.getGoodsStock()-1);//原仓库中的也要减,本实验没有考虑
          */
+        ValueOperations valueOperations = redisTemplate.opsForValue();
         //秒杀商品 减库存
         SeckillGoods seckillGoods = seckillGoodsService.getOne(new QueryWrapper<SeckillGoods>().eq("goods_id", goodsVo.getId()));
         seckillGoods.setStockCount(seckillGoods.getStockCount()-1);//减库存
         //更新秒杀库存信息 sql判断
         boolean result = seckillGoodsService.update(new UpdateWrapper<SeckillGoods>().setSql("stock_count = stock_count - 1")
                 .eq("goods_id", goodsVo.getId()).gt("stock_count", 0));
-        if (!result) {
+        if (seckillGoods.getStockCount()<1) {
+            //用于判断是否还有库存
+            valueOperations.set("isStockEmpty:" + goodsVo.getId(),0,1,TimeUnit.DAYS);
             return null;//不创建订单
         }
 
@@ -94,7 +99,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         seckillOrderService.save(seckillOrder);//秒杀订单与订单关联 只需要将订单写入数据库
 
         //将用户id+商品id，和对应的订单存入redis, 一天失效实际不是.
-        redisTemplate.opsForValue().set("user:"+user.getId()+":"+goodsVo.getId(),seckillOrder,1, TimeUnit.DAYS);
+        valueOperations.set("user:"+user.getId()+":"+goodsVo.getId(),
+                JsonUtil.object2JsonStr(seckillOrder),1, TimeUnit.DAYS);
         return order;
     }
 
